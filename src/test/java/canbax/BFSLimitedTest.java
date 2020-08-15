@@ -45,11 +45,19 @@ public class BFSLimitedTest {
         try (Driver driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI(), driverConfig);
              Session session = driver.session()) {
             // And given I have a node in the database
-            session.run("");
+            session.run(
+                    "CREATE (n1:Person {name:'n1'}) CREATE (n2:Person {name:'n2'}) CREATE (n3:Person {name:'n3'}) CREATE (n4:Person {name:'n4'}) CREATE (n5:Person {name:'n5'})"
+                            + "CREATE (n6:Person {name:'n6'}) CREATE (n7:Person {name:'n7'}) CREATE (n8:Person {name:'n8'}) CREATE (n9:Person {name:'n9'}) CREATE (n10:Person {name:'n10'})"
+                            + "CREATE (n11:Person {name:'n11'}) CREATE (n12:Person {name:'n12'}) CREATE (n13:Person {name:'n13'})"
+                            + "CREATE (n14:Person {name:'n14'}) CREATE "
+                            + "(n1)-[:KNOWS]->(n2), (n1)-[:KNOWS]->(n3)," // edges from root to 1. level
+                            + "(n2)-[:KNOWS]->(n4), (n2)-[:KNOWS]->(n5),(n3)-[:KNOWS]->(n6), (n3)-[:KNOWS]->(n7)," // edges from 1. level to 2. level
+                            + "(n4)-[:KNOWS]->(n8), (n4)-[:KNOWS]->(n9),(n5)-[:KNOWS]->(n10), (n6)-[:KNOWS]->(n11)," // edges from 2. level to 3 level
+                            + "(n11)-[:KNOWS]->(n12),(n11)-[:KNOWS]->(n13),(n11)-[:KNOWS]->(n14);"); // edges from 3. level to 4. level
 
-            // Then I can search for that node with lucene query syntax
+            // find 1 common downstream of 3 nodes
             StatementResult result = session
-                    .run("CALL graphOfInterest([5,7], [], 1, false, 100, 1, null, false, null, 2) YIELD nodes, edges return nodes, edges");
+                    .run("CALL BFS([0], 3, false) YIELD nodes, edges return nodes, edges");
 
             Record r = result.single();
             Set<Long> nodeSet = r.get("nodes").asList().stream().map(x -> ((InternalNode) x).id())
@@ -58,11 +66,11 @@ public class BFSLimitedTest {
                     .collect(Collectors.toSet());
 
             ArrayList<Long> trueNodeSet = new ArrayList<>();
-            trueNodeSet.add(5L);
-            trueNodeSet.add(7L);
+            for (long i = 0L; i < 11L; i++) {
+                trueNodeSet.add(i);
+            }
 
             assertThat(nodeSet.containsAll(trueNodeSet)).isEqualTo(true);
-            assertThat(edgeSet.size()).isEqualTo(0);
         }
     }
 

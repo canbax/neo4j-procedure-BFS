@@ -26,25 +26,46 @@ public class BFSLimited {
      */
     @Procedure(value = "BFS", mode = Mode.WRITE)
     @Description("finds the minimal sub-graph from given nodes")
-    public Stream<Output> BFS(@Name("ids") List<Long> ids, @Name("depthLimit") long depthLimit) {
+    public Stream<Output> BFS(@Name("ids") List<Long> ids, @Name("depthLimit") long depthLimit, @Name("isDirected") boolean isDirected) {
         Output o = new Output();
 
         // always return the source nodes
         for (long id : ids) {
             o.nodes.add(this.db.getNodeById(id));
         }
+        Direction direction = Direction.BOTH;
+        if (isDirected) {
+            direction = Direction.OUTGOING;
+        }
 
         Queue<Long> queue = new LinkedList<>(ids);
         HashSet<Long> visitedNodes = new HashSet<>(ids);
+        int currDepth = 0;
+        int cntElementsInQueueFromUpperLevel = 0;
+        boolean isFirstElemInLevel = true;
 
         while (!queue.isEmpty()) {
-            Node n1 = this.db.getNodeById(queue.remove());
 
-            Iterable<Relationship> edges = n1.getRelationships();
+            if (cntElementsInQueueFromUpperLevel == 0) {
+                currDepth++;
+                isFirstElemInLevel = true;
+            }
+            if (currDepth >= depthLimit + 1) {
+                break;
+            }
+
+            Node n1 = this.db.getNodeById(queue.remove());
+            cntElementsInQueueFromUpperLevel--;
+            Iterable<Relationship> edges = n1.getRelationships(direction);
+
             for (Relationship e : edges) {
                 Node n2 = e.getOtherNode(n1);
                 if (visitedNodes.contains(n2.getId())) {
                     continue;
+                }
+                if (isFirstElemInLevel) {
+                    cntElementsInQueueFromUpperLevel = queue.size();
+                    isFirstElemInLevel = false;
                 }
                 visitedNodes.add(n1.getId());
                 queue.add(n2.getId());
@@ -52,7 +73,6 @@ public class BFSLimited {
                 o.nodes.add(n2);
             }
         }
-
 
         return Stream.of(o);
     }
@@ -66,4 +86,6 @@ public class BFSLimited {
             this.edges = new ArrayList<>();
         }
     }
+
+
 }
