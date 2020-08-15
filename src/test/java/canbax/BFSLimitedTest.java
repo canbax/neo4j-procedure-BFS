@@ -36,6 +36,11 @@ public class BFSLimitedTest {
             + "(n4)-[:KNOWS]->(n8), (n4)-[:KNOWS]->(n9),(n5)-[:KNOWS]->(n10), (n6)-[:KNOWS]->(n11)," // edges from 2. level to 3 level
             + "(n11)-[:KNOWS]->(n12),(n11)-[:KNOWS]->(n13),(n11)<-[:KNOWS]-(n14);"; // edges from 3. level to 4. level
 
+//    CALL apoc.export.cypher.query("match (n)-[r]->(n2) return * limit 100", "subset.cypher",
+//    {format:'plain',separateFiles:false, cypherFormat: 'create', useOptimizations:{type: "NONE", unwindBatchSize: 20}})
+//    YIELD file, batches, source, format, nodes, relationships, time, rows, batchSize
+//    RETURN file, batches, source, format, nodes, relationships, time, rows, batchSize;
+
     @BeforeEach
     void initializeNeo4j() {
         this.embeddedDatabaseServer = TestServerBuilders.newInProcessBuilder().withProcedure(BFSLimited.class)
