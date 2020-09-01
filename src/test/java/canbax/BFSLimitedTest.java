@@ -35,7 +35,7 @@ public class BFSLimitedTest {
             + "(n2)-[:KNOWS]->(n4), (n2)-[:KNOWS]->(n5),(n3)-[:KNOWS]->(n6), (n3)-[:KNOWS]->(n7)," // edges from 1. level to 2. level
             + "(n4)-[:KNOWS]->(n8), (n4)-[:KNOWS]->(n9),(n5)-[:KNOWS]->(n10), (n6)-[:KNOWS]->(n11)," // edges from 2. level to 3 level
             + "(n11)-[:KNOWS]->(n12),(n11)-[:KNOWS]->(n13),(n11)<-[:KNOWS]-(n14);"; // edges from 3. level to 4. level
-
+// CALL apoc.cypher.runFile("file:///sub2.txt") // to run a cypher script file
 //    CALL apoc.export.cypher.query("match (n)-[r]->(n2) return * limit 100", "subset.cypher",
 //    {format:'plain',separateFiles:false, cypherFormat: 'create', useOptimizations:{type: "NONE", unwindBatchSize: 20}})
 //    YIELD file, batches, source, format, nodes, relationships, time, rows, batchSize
